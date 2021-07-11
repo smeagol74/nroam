@@ -119,9 +119,23 @@ Make the region inserted by BODY read-only, and marked with
   (nroam--prune)
   (nroam--insert))
 
+(defvar nroam--exclude-tags '("nonroam")
+  "List of roam-tags that should be excluded from nroam-mode usage.")
+
+(defun nroam--excluded-tag-p (tag)
+  "Return non-nil if TAG present in excluded list."
+  (member tag nroam--exclude-tags))
+
+(defun nroam--buffer-use-nroam-p ()
+  "Return non-nil if the current buffer can use nroam."
+  (not (apply 'append
+              (mapcar 'nroam--excluded-tag-p
+                      (org-roam--extract-tags)))))
+
 (defun nroam--org-roam-file-p ()
-  "Return non-nil if the current buffer is an `org-roam' buffer."
-  (org-roam--org-roam-file-p))
+  "Return non-nil if the current buffer is an `org-roam' buffer and should use nroam-mode."
+  (and (org-roam--org-roam-file-p)
+       (nroam--buffer-use-nroam-p)))
 
 (defun nroam--update-maybe ()
   "Update backlinks when nroam is enabled."
